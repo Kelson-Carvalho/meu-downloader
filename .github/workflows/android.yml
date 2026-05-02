@@ -11,41 +11,42 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Instalar Dependências
+      - name: Instalar Dependências do Sistema
         run: |
           sudo apt update
-          sudo apt install -y python3-pip build-essential git python3-dev zip unzip libffi-dev libssl-dev
+          sudo apt install -y python3-pip build-essential git python3-dev zip unzip libffi-dev libssl-dev libltdl-dev
           pip3 install --user --upgrade buildozer Cython virtualenv
 
-      - name: Criar buildozer.spec e Rodar Build
+      - name: Criar Configuração e Build
         run: |
           export PATH=$PATH:$HOME/.local/bin
           
-          # Criando o arquivo .spec do zero para não ter erro
-          cat <<EOF > buildozer.spec
-          [app]
-          title = MeuDownloader
-          package.name = meudownloader
-          package.domain = org.test
-          source.dir = .
-          source.include_exts = py,png,jpg,kv,atlas
-          version = 0.1
-          requirements = python3,kivy
-          orientation = portrait
-          fullscreen = 0
-          android.archs = arm64-v8a, armeabi-v7a
-          android.allow_backup = True
-          [buildozer]
-          log_level = 2
-          warn_on_root = 0
-          EOF
-
-          # Iniciando o build
+          # Remove arquivos velhos se existirem
+          rm -f buildozer.spec
+          
+          # Cria um arquivo .spec robusto
+          buildozer init
+          
+          # Ajusta o arquivo para os padrões necessários
+          sed -i 's/^#? *title = .*/title = MeuDownloader/' buildozer.spec
+          sed -i 's/^#? *package.name = .*/package.name = meudownloader/' buildozer.spec
+          sed -i 's/^#? *package.domain = .*/package.domain = org.test/' buildozer.spec
+          sed -i 's/^#? *source.dir = .*/source.dir = ./' buildozer.spec
+          sed -i 's/^#? *version = .*/version = 0.1/' buildozer.spec
+          sed -i 's/^#? *requirements = .*/requirements = python3,kivy/' buildozer.spec
+          sed -i 's/^#? *android.archs = .*/android.archs = arm64-v8a/' buildozer.spec
+          sed -i 's/^#? *android.accept_sdk_license = .*/android.accept_sdk_license = True/' buildozer.spec
+          
+          # Roda o build ignorando avisos de root e forçando a aceitação de tudo
           export BUILDOZER_ALLOW_KIVY_NEW_DESIGN=1
+          export BUILDOZER_WARN_ON_ROOT=0
           yes | buildozer -v android debug
+        env:
+          USER: root
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: meu-apk-gerado
+          name: meu-apk-final
           path: bin/*.apk
