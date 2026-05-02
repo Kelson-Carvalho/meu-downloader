@@ -5,7 +5,10 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # Permite iniciar o build manualmente pelo botão
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -13,10 +16,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Atualizado para a versão mais estável
+        uses: actions/checkout@v4
 
       - name: Build with Buildozer
-        uses: ArtemSerebriakov/buildozer-action@v1
+        # Corrigido: o nome do repositório deve ser minúsculo
+        uses: artemserebriakov/buildozer-action@v1
         with:
           workdir: .
           buildozer_version: master
