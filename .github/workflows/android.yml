@@ -11,33 +11,21 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Instalar Dependências
+      - name: Instalar Dependências do Sistema
         run: |
           sudo apt update
           sudo apt install -y python3-pip build-essential git python3-dev zip unzip libffi-dev libssl-dev
           pip3 install --user --upgrade buildozer Cython virtualenv
 
-      - name: Corrigir buildozer.spec e Build
+      - name: Rodar o Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          
-          # Se o spec não existir, cria um. Se existir, vamos preencher o que falta.
-          if [ ! -f buildozer.spec ]; then
-            buildozer init
-          fi
-
-          # Ajustando os campos obrigatórios que o log apontou como faltando:
-          sed -i 's/^title = .*/title = MeuDownloader/' buildozer.spec
-          sed -i 's/^package.name = .*/package.name = meudownloader/' buildozer.spec
-          sed -i 's/^source.dir = .*/source.dir = ./' buildozer.spec
-          sed -i 's/^version = .*/version = 0.1/' buildozer.spec
-          
-          # Aceitar licenças e rodar o build
           export BUILDOZER_ALLOW_KIVY_NEW_DESIGN=1
+          # O comando abaixo aceita as licenças e inicia a compilação
           yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: meu-apk
+          name: meu-apk-gerado
           path: bin/*.apk
