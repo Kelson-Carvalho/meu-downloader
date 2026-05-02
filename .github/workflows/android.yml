@@ -1,26 +1,32 @@
 name: Build APK
+
 on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+  workflow_dispatch: # Gatilho manual para você testar agora
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        # Esta é a Action oficial mantida pelos criadores do Kivy/Buildozer
-        uses: kivy/buildozer-action@master
-        with:
-          command: buildozer android debug
-          buildozer_version: master
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip build-essential git python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
+          sudo apt install -y libgstreamer1.0-gstreamer-lite1.0-dev libgstreamer-plugins-base1.0-dev
+          sudo apt install -y zip unzip autoconf libtool pkg-config libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip3 install --user --upgrade buildozer Cython virtualenv
 
-      - name: Upload APK
+      - name: Rodar o Buildozer
+        run: |
+          export PATH=$PATH:$HOME/.local/bin
+          # O comando abaixo aceita as licenças do SDK automaticamente e inicia o build
+          yes | buildozer android debug
+
+      - name: Upload do APK
         uses: actions/upload-artifact@v4
         with:
-          name: meu-aplicativo-apk
+          name: meu-apk-gerado
           path: bin/*.apk
