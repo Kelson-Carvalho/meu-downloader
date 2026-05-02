@@ -1,23 +1,20 @@
 name: Build APK
-
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # Versão estável para builds Android
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build with Buildozer
-        # Usando a versão oficial que está ativa e funcionando
-        uses: GearS3/buildozer-action@v1
+        # Esta é a Action oficial mantida pelos criadores do Kivy/Buildozer
+        uses: kivy/buildozer-action@master
         with:
           command: buildozer android debug
           buildozer_version: master
@@ -25,5 +22,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: meu-aplicativo-apk
           path: bin/*.apk
