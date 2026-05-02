@@ -1,13 +1,24 @@
 name: Build APK
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Permite iniciar o build manualmente pelo botão
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4 # Atualizado para a versão mais estável
+
       - name: Build with Buildozer
         uses: ArtemSerebriakov/buildozer-action@v1
         with:
+          workdir: .
           buildozer_version: master
           command: buildozer android debug
           repository_read_token: ${{ secrets.GITHUB_TOKEN }}
