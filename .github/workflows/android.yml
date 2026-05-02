@@ -11,38 +11,25 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Instalar dependências
+      - name: Instalar Buildozer e Dependências
         run: |
           sudo apt update
-          sudo apt install -y python3-pip build-essential git python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
-          sudo apt install -y libgstreamer1.0-gstreamer-lite1.0-dev libgstreamer-plugins-base1.0-dev
-          sudo apt install -y zip unzip autoconf libtool pkg-config libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt install -y python3-pip build-essential git python3-dev zip unzip libffi-dev libssl-dev
           pip3 install --user --upgrade buildozer Cython virtualenv
 
-      - name: Garantir arquivos necessários
+      - name: Diagnóstico e Build
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Se não houver main.py, o build vai falhar sempre. Criando um básico se faltar.
-          if [ ! -f main.py ]; then
-            echo "import kivy; from kivy.app import App; from kivy.uix.label import Label; class MainApp(App): def build(self): return Label(text='Olá')\nif __name__ == '__main__': MainApp().run()" > main.py
-          fi
-          # Inicializa o spec se não existir
+          
+          # 1. Verificar se os arquivos existem (Isso vai aparecer no seu log)
+          echo "--- LISTA DE ARQUIVOS NO REPOSITÓRIO ---"
+          ls -R
+          
+          # 2. Criar o spec se não existir
           if [ ! -f buildozer.spec ]; then
             buildozer init
           fi
-
-      - name: Rodar o Buildozer
-        run: |
-          export PATH=$PATH:$HOME/.local/bin
-          # O segredo: 'allow_root = 1' evita o erro 100 no ambiente do GitHub
-          sed -i 's/#log_level = 2/log_level = 2/' buildozer.spec
-          yes | buildozer -v android debug
-        env:
-          BUILDOZER_ALLOW_KIVY_NEW_DESIGN: 1
-          BUILDOZER_WARN_ON_ROOT: 0
-
-      - name: Upload do APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: meu-apk-gerado
-          path: bin/*.apk
+          
+          # 3. Rodar o build permitindo root e mostrando TUDO
+          export BUILDOZER_ALLOW_KIVY_NEW_DESIGN=1
+          buildozer --v android debug
