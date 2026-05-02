@@ -1,7 +1,7 @@
 name: Build APK
 
 on:
-  workflow_dispatch: # Gatilho manual para você testar agora
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,11 +19,20 @@ jobs:
           sudo apt install -y zip unzip autoconf libtool pkg-config libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip3 install --user --upgrade buildozer Cython virtualenv
 
+      - name: Gerar buildozer.spec caso não exista
+        run: |
+          export PATH=$PATH:$HOME/.local/bin
+          if [ ! -f buildozer.spec ]; then
+            buildozer init
+            echo "AVISO: buildozer.spec não encontrado! Criando um padrão..."
+          fi
+
       - name: Rodar o Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # O comando abaixo aceita as licenças do SDK automaticamente e inicia o build
-          yes | buildozer android debug
+          # O comando abaixo aceita as licenças e roda o build em modo debug
+          yes | buildozer -v android debug
+        continue-on-error: false
 
       - name: Upload do APK
         uses: actions/upload-artifact@v4
