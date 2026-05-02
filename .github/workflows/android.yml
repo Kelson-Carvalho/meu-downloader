@@ -7,22 +7,23 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # Versão estável para builds Android
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Build with Buildozer
-        # Corrigido: o nome do repositório deve ser minúsculo
-        uses: artemserebriakov/buildozer-action@v1
+        # Usando a versão oficial que está ativa e funcionando
+        uses: GearS3/buildozer-action@v1
         with:
-          workdir: .
-          buildozer_version: master
           command: buildozer android debug
-          repository_read_token: ${{ secrets.GITHUB_TOKEN }}
+          buildozer_version: master
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: bin/*.apk
